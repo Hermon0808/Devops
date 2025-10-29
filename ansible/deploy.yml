@@ -3,6 +3,11 @@
   hosts: localhost
   connection: local
   tasks:
+    - name: Apply Kubernetes secret
+      kubernetes.core.k8s:
+        src: ../secret.yaml
+        state: present
+
     - name: Apply Kubernetes deployment
       kubernetes.core.k8s:
         src: ../deployment.yaml

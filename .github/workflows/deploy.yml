@@ -47,5 +47,6 @@ jobs:
       run: |
         sed -i 's|<registry-name>|$ACR_NAME|g' deployment.yaml
         sed -i 's|v1|${{ github.sha }}|g' deployment.yaml
+        kubectl apply -f secret.yaml
         kubectl apply -f deployment.yaml
         kubectl apply -f service.yaml
