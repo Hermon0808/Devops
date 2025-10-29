@@ -1,0 +1,51 @@
+name: Build and Deploy to AKS
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  ACR_NAME: ${{ secrets.ACR_NAME }}
+  AKS_CLUSTER_NAME: ${{ secrets.AKS_CLUSTER_NAME }}
+  RESOURCE_GROUP: ${{ secrets.RESOURCE_GROUP }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Log in to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Build and push Docker image
+      run: |
+        az acr login --name $ACR_NAME
+        docker build -t $ACR_NAME.azurecr.io/weather-app:${{ github.sha }} .
+        docker push $ACR_NAME.azurecr.io/weather-app:${{ github.sha }}
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Log in to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Set AKS context
+      run: |
+        az aks get-credentials --resource-group $RESOURCE_GROUP --name $AKS_CLUSTER_NAME
+
+    - name: Update deployment image
+      run: |
+        sed -i 's|<registry-name>|$ACR_NAME|g' deployment.yaml
+        sed -i 's|v1|${{ github.sha }}|g' deployment.yaml
+        kubectl apply -f deployment.yaml
+        kubectl apply -f service.yaml

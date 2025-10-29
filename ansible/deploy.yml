@@ -1,0 +1,14 @@
+---
+- name: Deploy Weather App to Kubernetes
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Apply Kubernetes deployment
+      kubernetes.core.k8s:
+        src: ../deployment.yaml
+        state: present
+
+    - name: Apply Kubernetes service
+      kubernetes.core.k8s:
+        src: ../service.yaml
+        state: present
