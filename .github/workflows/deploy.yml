@@ -3,6 +3,7 @@ name: Build and Deploy to AKS
 on:
   push:
     branches: [ "main" ]
+  workflow_dispatch:
 
 env:
   ACR_NAME: ${{ secrets.ACR_NAME }}
@@ -50,3 +51,29 @@ jobs:
         kubectl apply -f secret.yaml
         kubectl apply -f deployment.yaml
         kubectl apply -f service.yaml
+
+    - name: Get service URL
+      run: |
+        echo "Waiting for LoadBalancer IP..."
+        for i in {1..30}; do
+          EXTERNAL_IP=$(kubectl get svc weather-app-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null)
+          if [ ! -z "$EXTERNAL_IP" ]; then
+            echo "Live website URL: http://$EXTERNAL_IP"
+            echo "LIVE_URL=http://$EXTERNAL_IP" >> $GITHUB_ENV
+            break
+          fi
+          echo "Waiting for external IP... ($i/30)"
+          sleep 10
+        done
+
+    - name: Comment on PR with live URL
+      if: env.LIVE_URL
+      uses: actions/github-script@v6
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `🚀 **Deployment Complete!**\n\n**Live Website:** ${process.env.LIVE_URL}\n\n**Local Testing:** http://localhost:5000 (when running Docker locally)`
+          })
