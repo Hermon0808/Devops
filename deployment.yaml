@@ -1,27 +1,29 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: weather-app
+  name: expense-tracker
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: weather-app
+      app: expense-tracker
   template:
     metadata:
       labels:
-        app: weather-app
+        app: expense-tracker
     spec:
       containers:
-      - name: weather-app
-        image: <registry-name>.azurecr.io/weather-app:v1
+      - name: expense-tracker
+        image: <registry-name>.azurecr.io/expense-tracker:v1
         ports:
         - containerPort: 5000
         env:
         - name: FLASK_ENV
           value: "production"
-        - name: OPENWEATHER_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: weather-api-secret
-              key: api-key
+        volumeMounts:
+        - name: expense-data
+          mountPath: /app
+      volumes:
+      - name: expense-data
+        persistentVolumeClaim:
+          claimName: expense-pvc

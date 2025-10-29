@@ -3,33 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather Forecast App</title>
+    <title>Expense Tracker</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f0f0f0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
             margin: 0;
+            padding: 20px;
         }
         .container {
+            max-width: 1200px;
+            margin: 0 auto;
             background-color: white;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
             text-align: center;
         }
-        input[type="text"] {
-            padding: 10px;
-            width: 200px;
-            margin-bottom: 10px;
+        .summary {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .summary-item {
+            text-align: center;
+        }
+        .summary-item h3 {
+            margin: 0;
+            color: #007bff;
+        }
+        .form-container {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
         }
         button {
-            padding: 10px 20px;
             background-color: #007bff;
             color: white;
+            padding: 10px 20px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
@@ -37,34 +69,120 @@
         button:hover {
             background-color: #0056b3;
         }
-        .weather-info {
+        table {
+            width: 100%;
+            border-collapse: collapse;
             margin-top: 20px;
         }
-        .error {
-            color: red;
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+            padding: 5px 10px;
+            text-decoration: none;
+            border-radius: 3px;
+        }
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+        .categories {
+            margin-top: 30px;
+        }
+        .category-item {
+            display: inline-block;
+            background-color: #e9ecef;
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Weather Forecast</h1>
-        <form method="post">
-            <input type="text" name="city" placeholder="Enter city name" required>
-            <br>
-            <button type="submit">Get Weather</button>
-        </form>
-        {% if error %}
-            <p class="error">{{ error }}</p>
-        {% endif %}
-        {% if weather %}
-            <div class="weather-info">
-                <h2>{{ weather.city }}</h2>
-                <p>Temperature: {{ weather.temperature }}°C</p>
-                <p>Humidity: {{ weather.humidity }}%</p>
-                <p>Wind Speed: {{ weather.wind_speed }} m/s</p>
-                <p>Description: {{ weather.description }}</p>
+        <h1>💰 Expense Tracker</h1>
+
+        <div class="summary">
+            <div class="summary-item">
+                <h3>Total Expenses</h3>
+                <p>${{"{:.2f}".format(total)}}</p>
             </div>
-        {% endif %}
+            <div class="summary-item">
+                <h3>Number of Expenses</h3>
+                <p>{{ expenses|length }}</p>
+            </div>
+        </div>
+
+        <div class="form-container">
+            <h2>Add New Expense</h2>
+            <form method="post" action="/add">
+                <div class="form-group">
+                    <label for="description">Description:</label>
+                    <input type="text" id="description" name="description" required>
+                </div>
+                <div class="form-group">
+                    <label for="amount">Amount ($):</label>
+                    <input type="number" id="amount" name="amount" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="category">Category:</label>
+                    <select id="category" name="category" required>
+                        <option value="Food">Food</option>
+                        <option value="Transportation">Transportation</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Utilities">Utilities</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="Shopping">Shopping</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="date">Date:</label>
+                    <input type="date" id="date" name="date">
+                </div>
+                <button type="submit">Add Expense</button>
+            </form>
+        </div>
+
+        <h2>Expense List</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Amount</th>
+                    <th>Category</th>
+                    <th>Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for expense in expenses %}
+                <tr>
+                    <td>{{ expense.description }}</td>
+                    <td>${{"{:.2f}".format(expense.amount)}}</td>
+                    <td>{{ expense.category }}</td>
+                    <td>{{ expense.date }}</td>
+                    <td><a href="/delete/{{ expense.id }}" class="delete-btn">Delete</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="categories">
+            <h2>Spending by Category</h2>
+            {% for category in categories %}
+            <div class="category-item">
+                <strong>{{ category.category }}</strong>: ${{"{:.2f}".format(category.total)}}
+            </div>
+            {% endfor %}
+        </div>
     </div>
 </body>
 </html>

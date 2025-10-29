@@ -1,7 +1,7 @@
 variable "resource_group_name" {
   description = "Name of the Azure Resource Group"
   type        = string
-  default     = "weather-app-rg"
+  default     = "expense-tracker-rg"
 }
 
 variable "location" {
@@ -13,11 +13,11 @@ variable "location" {
 variable "acr_name" {
   description = "Name of the Azure Container Registry"
   type        = string
-  default     = "weatherappacr"
+  default     = "expensetrackeracr"
 }
 
 variable "aks_cluster_name" {
   description = "Name of the AKS cluster"
   type        = string
-  default     = "weather-app-aks"
+  default     = "expense-tracker-aks"
 }

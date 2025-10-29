@@ -1,11 +1,11 @@
 ---
-- name: Deploy Weather App to Kubernetes
+- name: Deploy Expense Tracker to Kubernetes
   hosts: localhost
   connection: local
   tasks:
-    - name: Apply Kubernetes secret
+    - name: Apply Kubernetes PVC
       kubernetes.core.k8s:
-        src: ../secret.yaml
+        src: ../pvc.yaml
         state: present
 
     - name: Apply Kubernetes deployment
