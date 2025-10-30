@@ -1,0 +1,7 @@
+- hosts: localhost
+  tasks:
+    - name: Deploy Expense Tracker app to AKS
+      command: kubectl apply -f ../kubernetes/deployment.yaml
+
+    - name: Expose app via service
+      command: kubectl apply -f ../kubernetes/service.yaml
